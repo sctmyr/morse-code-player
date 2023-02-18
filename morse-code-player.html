@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Morse</title>
+<meta charset="utf-8"/>
+
+<style>
+body{
+  background:black;
+  text-align:center;
+}
+button{
+  font-size:9vw;
+  font-weight:bold;
+  margin-top:10vh;
+  padding:1.5em;
+  padding-bottom:.2em;
+  padding-top:.5em;
+  background:#888;
+  border-radius:10vw;
+}
+button.on{
+  background:yellow;
+}
+label{
+  color:white;
+  padding:1em;
+}
+#controls{
+  font-size:3vw;
+  margin:10vh;
+}
+#msg1{
+  width:60vw;
+  height:30vh;
+  padding:1em;
+  font-size:1vw;
+  color:black;
+  background-color:black;
+  border:0;
+}
+#msg1.focused{
+  background-color:#888;
+}
+svg{
+  width:24vw;
+  height:24vw;
+}
+#btn1:not(.started) > #stop1,
+#btn1.started #start1
+ {
+  display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<button
+  id="btn1"
+  onclick="sendMessage()"
+>
+<svg id="start1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+  <circle cx="25" cy="25" r="20" fill="transparent" stroke="black" stroke-width="2"/>
+  <polygon points="35,25 20,35 20,15" fill="black"/>
+</svg>
+<svg id="stop1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+  <circle cx="25" cy="25" r="20" fill="transparent" stroke="black" stroke-width="2"/>
+  <rect x="15" y="15" width="7" height="20" fill="black"/>
+  <rect x="28" y="15" width="7" height="20" fill="black"/>
+</svg>
+</button>
+
+<div id="controls">
+
+<textarea 
+  id="msg1" 
+  class="msg"
+  onfocus="msg1.classList.add('focused'); ; msg1.select()"
+  onblur="msg1.classList.remove('focused')"
+  autocomplete="new-password" 
+  autocorrect="off" 
+  autocapitalize="off" 
+  spellcheck="false"
+>
+NaCL H2O
+</textarea>
+
+</div>
+
+<script>
+
+const btn1=document.getElementById('btn1');
+const msg1=document.getElementById('msg1');
+
+var go=false;
+var speed=.5;
+
+async function sendMessage(){
+  if(go) {
+    btn1.classList.remove('started')
+    go=false
+    return
+  }
+  btn1.classList.add('started')
+  go=true 
+  while(go){
+    var message=' '+msg1.value.trim()+'  '  
+    //console.log(JSON.stringify(message))
+    await stringToMorseCode(message)
+  }
+} 
+
+function playTone(frequency, duration) {
+  return new Promise(resolve => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.01);
+    btn1.classList.add('on')
+    oscillator.start(audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+    oscillator.stop(audioContext.currentTime + duration / 1000);
+    oscillator.onended = () => {
+      audioContext.close();
+      btn1.classList.remove('on')
+      resolve();
+    };
+  });
+}
+
+console.log('xyz')
+
+//playTone(440, 1000);
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function stringToMorseCode(input) {
+  const MORSE_CODE = {
+    "A": ".-",
+    "B": "-...",
+    "C": "-.-.",
+    "D": "-..",
+    "E": ".",
+    "F": "..-.",
+    "G": "--.",
+    "H": "....",
+    "I": "..",
+    "J": ".---",
+    "K": "-.-",
+    "L": ".-..",
+    "M": "--",
+    "N": "-.",
+    "O": "---",
+    "P": ".--.",
+    "Q": "--.-",
+    "R": ".-.",
+    "S": "...",
+    "T": "-",
+    "U": "..-",
+    "V": "...-",
+    "W": ".--",
+    "X": "-..-",
+    "Y": "-.--",
+    "Z": "--..",
+    "0": "-----",
+    "1": ".----",
+    "2": "..---",
+    "3": "...--",
+    "4": "....-",
+    "5": ".....",
+    "6": "-....",
+    "7": "--...",
+    "8": "---..",
+    "9": "----.",
+    ".": ".-.-.-",
+    ",": "--..--",
+    "?": "..--..",
+    "!": "-.-.--",
+    "/": "-..-.",
+    ":": "---...",
+    ";": "-.-.-.",
+    "=": "-...-",
+    "+": ".-.-.",
+    "-": "-....-",
+    "_": "..--.-",
+    "\"": ".-..-.",
+    "$": "...-..-",
+    "@": ".--.-.",
+    "(": "-.--.",
+    ")": "-.--.-",
+    " ": " "
+  };
+
+  for (let i = 0; i < input.length; i++) {
+    if(!go) break;
+    const char = input[i].toUpperCase();
+    const code = MORSE_CODE[char];
+    if (code) {
+      for (let j = 0; j < code.length; j++) {
+        const symbol = code[j];
+        if (symbol === ".") {
+          await playTone(1000, 100/speed);
+          await delay(50);
+        } else if (symbol === "-") {
+          await playTone(1000, 300/speed);
+          await delay(50);
+        } else if (symbol === " ") {
+          await delay(400/speed);
+        }
+      }
+      await delay(300/speed);
+    }
+  }
+}
+
+</script>
+
+</body>
+</html>
+
