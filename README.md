@@ -7,10 +7,10 @@ Plays Morse Code messages using light and sound.
 - Simple, portable, standalone, offline-able, complete app in one html file.  
 
 # How to "Install"
-- Click the **`[<>Code]`** button, top right.
+- Click the green **`[Code]`** button, top right-ish.
 - Click on **`Download ZIP`**.
 - Click the downloaded ZIP file.
-- Click the morse-code-player-main directory.
+- Click the **`morse-code-player-main`** directory.
 - Double Click **`morse-code-player.html`**.
 > Alternately use any method to download or copy-n-paste the above **`morse-code-player.html`** into an html file on your computer.
 > Alternately use `git` `clone`, which is why github _exists_.
